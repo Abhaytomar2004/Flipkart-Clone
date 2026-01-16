@@ -4,8 +4,6 @@ const cloudinary = require('cloudinary');
 const app = require('./backend/app');
 const sequelize = require('./backend/config/database');
 
-const PORT = process.env.PORT || 4000;
-
 // Uncaught Exception
 process.on('uncaughtException', (err) => {
     console.log(`Error: ${err.message}`);
@@ -19,22 +17,10 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// PostgreSQL connect + server start
+// PostgreSQL connect (NO listen)
 sequelize.sync()
     .then(() => {
         console.log("PostgreSQL connected");
-
-        const server = app.listen(PORT, () => {
-            console.log(`Server running on http://localhost:${PORT}`);
-        });
-
-        // Unhandled Promise Rejection
-        process.on('unhandledRejection', (err) => {
-            console.log(`Error: ${err.message}`);
-            server.close(() => {
-                process.exit(1);
-            });
-        });
     })
     .catch((err) => {
         console.log("DB connection failed:", err);
@@ -53,3 +39,6 @@ if (process.env.NODE_ENV === 'production') {
         res.send('Server is Running! 🚀');
     });
 }
+
+// ❗ VERY IMPORTANT FOR VERCEL
+module.exports = app;
